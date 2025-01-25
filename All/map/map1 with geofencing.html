@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Route 1</title>
+    <style>
+      #map-canvas {
+        height: 100vh;
+      }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-database.js"></script>
+  </head>
+  <body>
+    <div id="map-canvas">Route 3</div>
+
+    <script>
+      window.lat = 13.9299; // Initial Latitude (Center of Shimoga)
+      window.lng = 75.5681; // Initial Longitude (Center of Shimoga)
+
+      var map;
+      var busMarker;
+      var customMarkers = []; // Array to store custom markers
+      var circle; // Define variable for Shimoga city boundary circle
+
+      var initialize = function() {
+        map = new google.maps.Map(document.getElementById('map-canvas'), {
+          center: { lat: lat, lng: lng },
+          zoom: 14
+        });
+
+        // Define Shimoga city boundary circle
+        circle = new google.maps.Circle({
+          strokeColor: "#FF0000",
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: "#FF0000",
+          fillOpacity: 0.1,
+          map: map,
+          center: { lat: lat, lng: lng }, // Center of Shimoga city
+          radius: 5000 // Radius in meters (adjust as needed)
+        });
+
+        // Adding the bus icon marker
+        busMarker = new google.maps.Marker({
+          position: { lat: lat, lng: lng },
+          map: map,
+          icon: {
+            url: 'https://maps.google.com/mapfiles/kml/shapes/bus.png', // Bus icon
+            scaledSize: new google.maps.Size(50, 50) // Adjust the size as needed
+          }
+        });
+
+        // Adding markers for custom locations
+        var customLocations = [
+          // Add your custom locations here
+          { lat: 13.916595180853637, lng: 75.59497873804746, name: 'Sahyadri college' },
+          { lat: 13.918288928118766, lng: 75.5943861520425, name: 'Sandal Colony' },
+          { lat: 13.927358897787636, lng: 75.59143668662325, name: 'Mahadevi Theatre' },
+          { lat: 13.929953494478358, lng: 75.59023253325813, name: 'Shankar Mutt' },
+          { lat: 13.931081210858268, lng: 75.58863074655302, name: 'Shankar Mutt' },
+          { lat: 13.932516359236983, lng: 75.58651164438935, name: 'Shankar Mutt' },
+          { lat: 13.933913395827869, lng: 75.58558404247629, name: 'Sheshadripuram' },
+          { lat: 13.938401471456304, lng: 75.58425489162296, name: 'Sheshadripuram' },
+          { lat: 13.940315857061384, lng: 75.58357211263096, name: 'Sheshadripuram' },
+          { lat: 13.941037429068762, lng: 75.58235828345948, name: 'Sheshadripuram' },
+          { lat: 13.936373068814426, lng: 75.57612939553692, name: 'Mahaveera Circle' },
+          { lat: 13.942519680469786, lng: 75.57420221678078, name: 'Kamala Nursing Home' },
+          { lat: 13.947191546527062, lng: 75.57453998799055, name: 'Parvathi Nursing Home' },
+          { lat: 13.952788632993691, lng: 75.57549069295277, name: 'Ashwathnagar' },
+          { lat: 13.955602686838631, lng: 75.57580364223368, name: 'Ashwathnagar' },
+          { lat: 13.956950020961584, lng: 75.57847406650251, name: 'Ashwathnagar' },
+          { lat: 13.963191220422356, lng: 75.57974938385702, name: 'JNNCE' }
+        ];
+
+        customMarkers = customLocations.map(function(location) {
+          var marker = new google.maps.Marker({
+            position: { lat: location.lat, lng: location.lng },
+            map: map,
+            title: location.name,
+            icon: {
+              url: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png', // Red marker icon
+              scaledSize: new google.maps.Size(50, 50) // Adjust the size as needed
+            }
+          });
+          return marker;
+        });
+
+        // Create polylines for connecting custom markers with black lines
+        var path = customLocations.map(function(location) {
+          return new google.maps.LatLng(location.lat, location.lng);
+        });
+
+        polyline = new google.maps.Polyline({
+          path: path,
+          geodesic: true,
+          strokeColor: '#000000',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+        polyline.setMap(map);
+
+        // Calculate and display route information
+        calculateRouteInformation(customLocations);
+      };
+
+      function calculateRouteInformation(locations) {
+        var routeInfo = document.getElementById('route-info');
+        var totalTime = 0;
+
+        for (var i = 1; i < locations.length; i++) {
+          var prevLocation = locations[i - 1];
+          var currentLocation = locations[i];
+          var distance = google.maps.geometry.spherical.computeDistanceBetween(
+            new google.maps.LatLng(prevLocation.lat, prevLocation.lng),
+            new google.maps.LatLng(currentLocation.lat, currentLocation.lng)
+          );
+          var time = distance / 50; // Assuming average speed of 50 meters per minute
+          totalTime += time;
+          var listItem = document.createElement('li');
+          listItem.textContent = 'From ' + prevLocation.name + ' to ' + currentLocation.name + ': ' + time.toFixed(2) + ' minutes';
+          routeInfo.appendChild(listItem);
+        }
+
+        var totalListItem = document.createElement('li');
+        totalListItem.textContent = 'Total time: ' + totalTime.toFixed(2) + ' minutes';
+        routeInfo.appendChild(totalListItem);
+      }
+
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "gps-tracker06.firebaseapp.com",
+        databaseURL: "https://gps-tracker06-default-rtdb.firebaseio.com",
+        projectId: "gps-tracker06",
+        storageBucket: "gps-tracker06.appspot.com",
+        messagingSenderId: "613803145470",
+        appId: "1:613803145470:web:0f2b2b21c2534b16188daf"
+      };
+
+      window.initialize = initialize;
+
+      firebase.initializeApp(firebaseConfig);
+
+      var ref = firebase.database().ref();
+
+      ref.on("value", function(snapshot) {
+        var gps = snapshot.val();
+        console.log(gps.LAT);
+        console.log(gps.LNG);
+        lat = gps.LAT;
+        lng = gps.LNG;
+
+        // Check if the bus is within Shimoga city boundary circle
+        var busPosition = new google.maps.LatLng(lat, lng);
+
+        if (google.maps.geometry.spherical.computeDistanceBetween(busPosition, circle.getCenter()) <= circle.getRadius()) {
+          // Bus is within Shimoga city
+          console.log('Bus is within Shimoga city');
+          // Remove caution message if previously shown
+          document.getElementById('caution').style.display = 'none';
+        } else {
+          // Bus is outside Shimoga city
+          console.log('Bus is outside Shimoga city');
+          // Show caution message
+          document.getElementById('caution').style.display = 'block';
+        }
+
+        map.setCenter({ lat: lat, lng: lng });
+        busMarker.setPosition({ lat: lat, lng: lng });
+      }, function (error) {
+        console.log("Error: " + error.code);
+      });
+
+    </script>
+    <div id="caution" style="display: none; position: fixed; top: 10px; left: 10px; background-color: #ff0000; color: #ffffff; padding: 10px; z-index: 9999;">Caution: Vehicle is outside Shimoga city!</div>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyDNrXn_ccQO0CL3o95LROi_lQguFGq4bH0&callback=initialize"></script>  
+  </body>
+</html>

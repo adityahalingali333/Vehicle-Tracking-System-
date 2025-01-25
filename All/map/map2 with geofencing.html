@@ -1,0 +1,175 @@
+
+  <!DOCTYPE html>
+<html>
+  <head>
+    <title>Route 3</title>
+    <style>
+      #map-canvas {
+        height: 100vh;
+      }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-database.js"></script>
+  </head>
+  <body>
+    <div id="map-canvas"></div>
+
+    <script>
+      window.lat = 13.9299; // Initial Latitude (Center of Shimoga)
+      window.lng = 75.5681; // Initial Longitude (Center of Shimoga)
+
+      var map;
+      var busMarker;
+      var customMarkers = []; // Array to store custom markers
+      var circle; // Define variable for Shimoga city boundary circle
+
+      var initialize = function() {
+        map = new google.maps.Map(document.getElementById('map-canvas'), {
+          center: { lat: lat, lng: lng },
+          zoom: 14
+        });
+
+        // Define Shimoga city boundary circle
+        circle = new google.maps.Circle({
+          strokeColor: "#FF0000",
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: "#FF0000",
+          fillOpacity: 0.1,
+          map: map,
+          center: { lat: lat, lng: lng }, // Center of Shimoga city
+          radius: 5000 // Radius in meters (adjust as needed)
+        });
+
+        // Adding the bus icon marker
+        busMarker = new google.maps.Marker({
+          position: { lat: lat, lng: lng },
+          map: map,
+          icon: {
+            url: 'https://maps.google.com/mapfiles/kml/shapes/bus.png', // Bus icon
+            scaledSize: new google.maps.Size(50, 50) // Adjust the size as needed
+          }
+        });
+
+        // Adding markers for custom locations
+        
+          var customLocations = [
+          { lat: 13.9443004345913,  lng: 75.54227803020663, name: 'Mahindra Mahanath motors '},
+          { lat: 13.938849483600922, lng: 75.54110579059851, name: 'Good Luck Circle'},
+          { lat: 13.935163284742956, lng: 75.54636292009651, name: 'IT Office'},
+          { lat: 13.938266359960688, lng: 75.54604105503479, name: 'MORE super market'},
+          { lat: 13.942520923375913, lng: 75.54592973370015, name: 'Alkola Circle'},
+          { lat: 13.94790556282734, lng: 75.54935097341583, name: 'Katte Subanna Kalyana Mantapa Cross'},
+          { lat: 13.947616656100937, lng: 75.55821496875768, name: '60ft Road'},
+          { lat: 13.946965873144414, lng: 75.56043047342044, name: 'Auto stand'},
+          { lat: 13.944706688999572, lng: 75.56695202521443, name: 'Laxmi Talkies'},
+          { lat: 13.944706688997204, lng: 75.56911925000736, name: 'Nirmala Nursing Home'},
+          { lat: 13.94537244006865, lng: 75.57436473004779, name: 'Usha Nursing Home'},
+          { lat: 13.952711778263403, lng: 75.57545245218535, name: 'Polar Bear Ice-Cream'},
+          { lat: 13.957012010845451, lng: 75.57849944165649, name: 'Navule'},
+          { lat: 13.963191220422356, lng: 75.57974938385702, name: 'JNNCE'}
+        ];
+        customMarkers = customLocations.map(function(location) {
+          var marker = new google.maps.Marker({
+            position: { lat: location.lat, lng: location.lng },
+            map: map,
+            title: location.name,
+            icon: {
+              url: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png', // Red marker icon
+              scaledSize: new google.maps.Size(50, 50) // Adjust the size as needed
+            }
+          });
+          return marker;
+        });
+
+        // Create polylines for connecting custom markers with black lines
+        var path = customLocations.map(function(location) {
+          return new google.maps.LatLng(location.lat, location.lng);
+        });
+
+        polyline = new google.maps.Polyline({
+          path: path,
+          geodesic: true,
+          strokeColor: '#000000',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+        polyline.setMap(map);
+
+        // Calculate and display route information
+        calculateRouteInformation(customLocations);
+      };
+
+      function calculateRouteInformation(locations) {
+        var routeInfo = document.getElementById('route-info');
+        var totalTime = 0;
+
+        for (var i = 1; i < locations.length; i++) {
+          var prevLocation = locations[i - 1];
+          var currentLocation = locations[i];
+          var distance = google.maps.geometry.spherical.computeDistanceBetween(
+            new google.maps.LatLng(prevLocation.lat, prevLocation.lng),
+            new google.maps.LatLng(currentLocation.lat, currentLocation.lng)
+          );
+          var time = distance / 50; // Assuming average speed of 50 meters per minute
+          totalTime += time;
+          var listItem = document.createElement('li');
+          listItem.textContent = 'From ' + prevLocation.name + ' to ' + currentLocation.name + ': ' + time.toFixed(2) + ' minutes';
+          routeInfo.appendChild(listItem);
+        }
+
+        var totalListItem = document.createElement('li');
+        totalListItem.textContent = 'Total time: ' + totalTime.toFixed(2) + ' minutes';
+        routeInfo.appendChild(totalListItem);
+      }
+
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "gpstracker07-10832.firebaseapp.com",
+        databaseURL: "https://gpstracker07-10832-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "gpstracker07-10832",
+        storageBucket: "gpstracker07-10832.appspot.com",
+        messagingSenderId: "68460697988",
+        appId: "1:68460697988:web:684519f25e1e778182e5d1"
+      };
+
+      window.initialize = initialize;
+
+      firebase.initializeApp(firebaseConfig);
+
+      var ref = firebase.database().ref();
+
+      ref.on("value", function(snapshot) {
+        var gps = snapshot.val();
+        console.log(gps.LAT);
+        console.log(gps.LNG);
+        lat = gps.LAT;
+        lng = gps.LNG;
+
+        // Check if the bus is within Shimoga city boundary circle
+        var busPosition = new google.maps.LatLng(lat, lng);
+
+        if (google.maps.geometry.spherical.computeDistanceBetween(busPosition, circle.getCenter()) <= circle.getRadius()) {
+          // Bus is within Shimoga city
+          console.log('Bus is within Shimoga city');
+          // Remove caution message if previously shown
+          document.getElementById('caution').style.display = 'none';
+        } else {
+          // Bus is outside Shimoga city
+          console.log('Bus is outside Shimoga city');
+          // Show caution message
+          document.getElementById('caution').style.display = 'block';
+        }
+
+        map.setCenter({ lat: lat, lng: lng });
+        busMarker.setPosition({ lat: lat, lng: lng });
+      }, function (error) {
+        console.log("Error: " + error.code);
+      });
+
+    </script>
+    <div id="caution" style="display: none; position: fixed; top: 10px; left: 10px; background-color: #ff0000; color: #ffffff; padding: 10px; z-index: 9999;">Caution: Vehicle is outside Shimoga city!</div>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyDNrXn_ccQO0CL3o95LROi_lQguFGq4bH0&callback=initialize"></script>  
+  </body>
+</html>

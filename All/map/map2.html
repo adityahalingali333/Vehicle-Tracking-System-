@@ -1,0 +1,142 @@
+
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Route 3</title>
+    <link rel="stylesheet" href="map.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <div class="bg"></div>
+    <div class="bg-others"> 
+      <div class="container">
+        <h1> Route 3: Gopala Gowda Extension to College</h1>
+        <center><hr style="height:2px; border:none; color:#ffffff; background-color:#ffffff; width:35%; margin: 0 auto 0 auto;"></center>  
+        <center><div id="map-canvas"></div></center>
+        <div id="stop-times"></div>
+        <p style="text-align: center; color: red; margin-top: 20px;">*Average time can vary from time to time</p>
+      </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-database.js"></script>
+    <script>
+      window.lat = 13.963191220422356; // Initial Latitude
+      window.lng = 75.57974938385702;    // Initial Longitude
+
+      var map;
+      var busMarker;
+      var customMarkers = []; // Array to store custom markers
+      var polyline;
+
+      var initialize = function() {
+        map = new google.maps.Map(document.getElementById('map-canvas'), {
+          center: { lat: lat, lng: lng },
+          zoom: 14
+        });
+
+        // Adding the bus icon marker
+        busMarker = new google.maps.Marker({
+          position: { lat: lat, lng: lng },
+          map: map,
+          icon: {
+            url: 'https://maps.google.com/mapfiles/kml/shapes/bus.png', // Bus icon
+            scaledSize: new google.maps.Size(50, 50) // Adjust the size as needed
+          }
+        });
+
+        // Adding markers for custom locations
+        var customLocations = [
+        { lat: 13.9443004345913,  lng: 75.54227803020663, name: 'Mahindra Mahanath motors ', time: '0min'},    
+        { lat: 13.938849483600922, lng: 75.54110579059851, name: 'Good Luck Circle', time: '2.31min'},
+        { lat: 13.935163284742956, lng: 75.54636292009651, name: 'IT Office', time: '1.26min'},
+        { lat: 13.938266359960688, lng: 75.54604105503479, name: 'MORE super market', time: '1.28min'},
+        { lat: 13.942520923375913, lng: 75.54592973370015, name: 'Alkola Circle', time: '1.23min'},
+        { lat: 13.94790556282734, lng: 75.54935097341583, name: 'Katte Subanna Kalyana Mantapa Cross', time: '2.48min'},
+        { lat: 13.947616656100937, lng: 75.55821496875768, name: '60ft Road', time: '2.33min'},
+        { lat: 13.944706688999572, lng: 75.56695202521443, name: 'Laxmi Talkies', time: '1.25min'},
+        { lat: 13.944706688997204, lng: 75.56911925000736, name: 'Nirmala Nursing Home', time: '2.33min'},
+        { lat: 13.94537244006865, lng: 75.57436473004779, name: 'Usha Nursing Home', time: '1.2min'},
+        { lat: 13.952711778263403, lng: 75.57545245218535, name: 'Polar Bear Ice-Cream', time: '3.3min'},
+        { lat: 13.957012010845451, lng: 75.57849944165649, name: 'Navule', time: '1.3min'},
+        { lat: 13.963191220422356, lng: 75.57974938385702, name: 'JNNCE', time: '1.33min' }
+        ];
+
+        customMarkers = customLocations.map(function(location) {
+          var marker = new google.maps.Marker({
+            position: { lat: location.lat, lng: location.lng },
+            map: map,
+            title: location.name,
+            icon: {
+              url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png', // Red marker icon
+              scaledSize: new google.maps.Size(50, 50) // Adjust the size as needed
+            }
+          });
+
+          // Add text above the marker
+          var infowindow = new google.maps.InfoWindow({
+            content: "<strong>" + location.name + "</strong><br>Avg Time: " + location.time
+          });
+
+          marker.addListener('mouseover', function() {
+            infowindow.open(map, marker);
+          });
+
+          marker.addListener('mouseout', function() {
+            infowindow.close();
+          });
+
+          return marker;
+        });
+
+        // Create polylines for connecting custom markers with black lines
+        var path = customLocations.map(function(location) {
+          return new google.maps.LatLng(location.lat, location.lng);
+        });
+
+        polyline = new google.maps.Polyline({
+          path: path,
+          geodesic: true,
+          strokeColor: 'black',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+        polyline.setMap(map);
+      };
+
+      const firebaseConfig = {
+  apiKey: "AIzaSyAymHjZ_3PPbISXO93ncc1GCu5MfwnHQkE",
+  authDomain: "gpstracker07-10832.firebaseapp.com",
+  databaseURL: "https://gpstracker07-10832-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "gpstracker07-10832",
+  storageBucket: "gpstracker07-10832.appspot.com",
+  messagingSenderId: "68460697988",
+  appId: "1:68460697988:web:684519f25e1e778182e5d1"
+};
+
+      window.initialize = initialize;
+
+      firebase.initializeApp(firebaseConfig);
+
+      var ref = firebase.database().ref();
+
+      ref.on("value", function(snapshot) {
+        var gps = snapshot.val();
+        console.log(gps.LAT);
+        console.log(gps.LNG);
+        lat = gps.LAT;
+        lng = gps.LNG;
+
+        map.setCenter({ lat: lat, lng: lng });
+        busMarker.setPosition({ lat: lat, lng: lng });
+      }, function (error) {
+        console.log("Error: " + error.code);
+      });
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyDNrXn_ccQO0CL3o95LROi_lQguFGq4bH0&callback=initialize"></script>  
+  </body>
+</html>

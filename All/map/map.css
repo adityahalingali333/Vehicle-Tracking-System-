@@ -1,0 +1,72 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  .bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff; /* Sky blue background */
+    z-index: -1;
+  }
+  
+  .bg-others {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .container {
+    text-align: center;
+  }
+  
+  h1 {
+    font-size: 36px;
+    color: #333; /* Set your desired text color */
+    background-color: #9dccee; /* White background */
+    padding: 10px 20px; /* Add padding */
+    border-radius: 10px; /* Add border radius */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add box shadow */
+  }
+  
+  #map-canvas {
+    width: 100%;
+    height: calc(100vh - 100px); /* Adjusted height based on the heading height */
+  }
+  
+  /* Media query for mobile devices */
+  @media only screen and (max-width: 768px) {
+    h1 {
+      font-size: 24px; /* Decrease font size for mobile devices */
+      padding: 8px 16px; /* Adjust padding for mobile devices */
+    }
+    #map-canvas {
+      height: calc(100vh - 120px); /* Adjusted height for mobile devices */
+    }
+  }
+  
+  /* Media query for tablets */
+  @media only screen and (min-width: 769px) and (max-width: 1024px) {
+    h1 {
+      font-size: 30px; /* Adjust font size for tablets */
+    }
+    #map-canvas {
+      height: calc(100vh - 120px); /* Adjusted height for tablets */
+    }
+  }
+  
+  /* Media query for laptops */
+  @media only screen and (min-width: 1025px) {
+    h1 {
+      font-size: 36px; /* Reset font size for laptops */
+    }
+    #map-canvas {
+      height: calc(100vh - 120px); /* Adjusted height for laptops */
+    }
+  }
+  
