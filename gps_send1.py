@@ -41,7 +41,7 @@ def main():
             lat = newmsg.latitude
             lng = newmsg.longitude
             gps = f"Latitude={lat} and Longitude={lng}"
-            print(gps)
+            print("gps is retrived")
 
             send_data_to_firebase(lat, lng)
 
